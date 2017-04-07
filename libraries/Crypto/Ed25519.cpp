@@ -23,7 +23,12 @@
 #include "Ed25519.h"
 #include "Curve25519.h"
 #include "Crypto.h"
-#include "RNG.h"
+
+#if defined(ESP8266)
+	#include "esp8266_peri.h"
+#else
+    #include "RNG.h"
+#endif
 #include "utility/LimbUtil.h"
 #include <string.h>
 
@@ -242,7 +247,13 @@ bool Ed25519::verify(const uint8_t signature[64], const uint8_t publicKey[32],
  */
 void Ed25519::generatePrivateKey(uint8_t privateKey[32])
 {
+#if defined(ESP8266)
+	for(unsigned int i = 0; i < 32; i++) {
+		privateKey[i] = (uint8_t)RANDOM_REG32;
+	}
+#else
     RNG.rand(privateKey, 32);
+#endif
 }
 
 /**
