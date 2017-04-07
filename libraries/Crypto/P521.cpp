@@ -22,7 +22,11 @@
 
 #include "P521.h"
 #include "Crypto.h"
-#include "RNG.h"
+#if defined(ESP8266)
+	#include "esp8266_peri.h"
+#else
+    #include "RNG.h"
+#endif
 #include "SHA512.h"
 #include "utility/LimbUtil.h"
 #include <string.h>
@@ -472,7 +476,13 @@ void P521::generatePrivateKey(uint8_t privateKey[66])
     // and discard it if it is not within the range 1 to q - 1.
     limb_t x[NUM_LIMBS_521BIT];
     do {
-        RNG.rand((uint8_t *)x, sizeof(x));
+#if defined(ESP8266)
+	for(unsigned int i = 0; i < sizeof(x); i++) {
+		x[i] = (uint8_t)RANDOM_REG32;
+	}
+#else
+    RNG.rand((uint8_t *)x, sizeof(x));
+#endif
 #if BIGNUMBER_LIMB_8BIT
         x[NUM_LIMBS_521BIT - 1] &= 0x01;
 #else
